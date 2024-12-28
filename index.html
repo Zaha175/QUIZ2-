@@ -1,0 +1,537 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>MPU-Quiz</title>
+<style>
+body {
+    background-color: #d8eafd; /* Hellblauer Hintergrund */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+#startQuiz {
+    font-size: 28px; /* Größerer Start-Button */
+    padding: 24px 48px;
+    background: #1976D2; /* Dunkleres Blau */
+    color: white;
+    border: none;
+    border-radius: 8px; /* Runde Ecken */
+    cursor: pointer;
+    margin: 20px 0;
+}
+.answer-btn {
+    display: block;
+    width: 100%;
+    padding: 15px; /* Mehr Padding */
+    margin: 10px 0; /* Mehr Abstand */
+    background: #fff9c4; /* Hellgelb */
+    border: 1px solid #ddd;
+    border-radius: 8px; /* Runde Ecken */
+    font-size: 20px; /* Größere Schrift */
+    font-weight: bold; /* Fette Schrift */
+    cursor: pointer;
+    transition: background 0.3s;
+}
+.answer-btn:hover {
+    background: #ffecb3; /* Leichter Hover-Effekt */
+}
+#questionText {
+    font-size: 22px;
+    font-weight: bold; /* Fettere Schrift */
+    margin: 20px auto;
+    text-align: center; /* Zentriert die Frage */
+    background-color: #1976D2; /* Dunkelblauer Hintergrund */
+    color: white; /* Weiße Schrift */
+    padding: 15px; /* Abstand um die Frage */
+    border-radius: 8px; /* Runde Ecken */
+    max-width: 800px; /* Maximale Breite der Frage */
+}
+.correct {
+    background: #c8e6c9 !important;
+}
+.incorrect {
+    background: #ffcdd2 !important;
+}
+.nav-buttons {
+    margin-top: 20px;
+}
+.nav-button {
+    padding: 10px 20px;
+    margin: 0 5px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px; /* Runde Ecken */
+    font-size: 18px; /* Größere Schrift für Navigationsbuttons */
+    cursor: pointer;
+}
+.result-pass {
+    color: #4CAF50;
+    font-size: 24px;
+}
+.result-fail {
+    color: #f44336;
+    font-size: 24px;
+}
+</style>
+</head>
+<body>
+<button id="startQuiz">Quiz starten</button>
+
+<div id="quiz" style="display: none;">
+  <div id="questionText" class="question"></div>
+  <div id="answerButtons" class="answers"></div>
+  <div class="nav-buttons">
+    <button class="nav-button" id="prevButton" style="display: none;">Zurück?</button>
+    <button class="nav-button" id="nextButton" style="display: none;">Nächste Frage!</button>
+  </div>
+</div>
+
+<div id="results" style="display: none;"></div>
+
+<script>
+const questions = [
+ {
+    "question": "Warum kommen Sie zur MPU? Warum sind Sie heute hier?",
+    "answers": [
+      "Ich bin hier bei der MPU, weil ich unter Alkoholeinfluss gefahren bin, das Gesetz nicht beachtet habe, einen Unfall verursacht habe, egoistisch war, eine Gefahr für mich und andere war! Ich habe erkannt, dass ich ein Problem mit Alkohol habe, ich habe Alkohol missbraucht und habe aufgehört zu trinken. Heute möchte ich Ihnen zeigen, dass ich mich verändert habe und dass ich jetzt in der Lage bin, verantwortungsbewusst zu fahren.",
+      "Ich bin hier für eine Routineüberprüfung. Ich hielt es für wichtig, meine Fähigkeit, sicher zu fahren, zu überprüfen."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Warum glauben Sie, dass die Behörden besorgt über Ihre Fähigkeit sind, ein Fahrzeug zu führen? Sind Sie einverstanden, dass Sie zur MPU kommen?",
+    "answers": [
+      "Ja, ich bin einverstanden, weil ich unter Alkoholeinfluss gefahren bin und einen Unfall verursacht habe! Dies ist ein schweres Vergehen, das mein Leben und das anderer gefährdet hat!",
+      "Ich bin nicht einverstanden, aber ich habe beschlossen, die MPU zu machen, um den Behörden zu zeigen, dass ich aus meinen Fehlern gelernt habe."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Beschreiben Sie den Tag des Delikts aus Ihrer Sicht mit Datum und Uhrzeit?",
+    "answers": [
+      "06.08.2022 Samstag, Ich hatte einen Unfall um 20:15 Uhr\n\nIch fuhr auf der Landesstraße 438 von Alsheim nach Dorn-Dürkheim, aufgrund des Alkoholkonsums und der erhöhten Geschwindigkeit bin ich in ein Schlagloch auf der rechten Straßenseite gefahren, das Auto überschlug sich und landete etwa 75 Meter von der Straße entfernt auf dem Dach. Meine Freunde im Auto wurden leicht verletzt.\n\nDie Blutprobe um 22:27 Uhr ergab 1,66 Promille.\n\nDer Beginn des Alkoholkonsums bis zur Blutentnahme: 8,5 Stunden!\n\nSamstag, 06.08.2022, Geburtstag\n\nIch habe von 14:00 bis 20:00 Uhr Alkohol getrunken. Wir waren fünf Freunde. Ich habe 9 Flaschen Bier (halbe Liter), 4,5 Liter Bier (5%) + 2 doppelte Schnäpse (40 ml, 40 Vol.-%) getrunken.",
+      "Ich erinnere mich nicht genau an die Details des Vorfalls."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Haben Sie an diesem Tag geplant, so viel zu trinken?",
+    "answers": [
+      "Nein, es war nicht geplant!\n\nIch hatte keine Kontrolle über den Konsum, das ist das Problem, der Konsum ist mir während der Party außer Kontrolle geraten!",
+      "Ja, ich hatte vor, viel zu trinken."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wie wollten Sie ursprünglich nach Hause kommen, wie hatten Sie das geplant und warum sind Sie vom Plan abgewichen?",
+    "answers": [
+      "Ich wollte ursprünglich dort schlafen, aber ich habe mich entschieden, \n\naus Bequemlichkeit, nach Hause zu fahren. Die Entscheidung war eindeutig falsch und verantwortungslos, ich habe etwas Illegales getan, indem ich unter Alkoholeinfluss gefahren bin. Ich hatte einen Unfall!",
+      "Ich hatte keinen spezifischen Plan, um nach Hause zu kommen. Ich habe spontan entschieden, was eine falsche Entscheidung war."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Haben Sie geglaubt, dass Sie noch sicher fahren können?",
+    "answers": [
+      "Ja, ich habe mich fähig gefühlt zu fahren. Aus heutiger Sicht war das natürlich nicht der Fall!",
+      "Ich habe in dem Moment nicht an Sicherheit gedacht. Ich war verantwortungslos."
+    ],
+    "correct": 0
+},
+  {
+    "question": "Welche Auswirkungen hat Alkohol auf die Fahrtüchtigkeit?",
+    "answers": [
+      "Schwache Reaktion, Tunnelblick\n\nMehr auf sich selbst fixiert, weniger konzentriert.\n\nEntfernungen können nicht mehr richtig geschätzt werden\n\nZum Beispiel mit entgegenkommenden oder vorausfahrenden Fahrzeugen.\n\nBesonders gefährlich, weil ich nicht versichert bin\n\nWenn ich unter Alkoholeinfluss einen Unfall habe.",
+      "Alkohol lässt mich entspannter und geselliger fühlen, aber ich glaube nicht, dass er mich negativ am Steuer beeinflusst."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wie oft waren Sie unter Alkoholeinfluss auf der Straße, ohne Aufmerksamkeit zu erregen, und was schließen Sie daraus?",
+    "answers": [
+      "Leider bin ich oft unter Alkoholeinfluss gefahren und habe die Risiken ignoriert. Ich bin ein paar Mal wie am Tag des Delikts gefahren oder mit Restalkohol im Blut, ja! Das war verantwortungslos von mir. Es tut mir leid!",
+      "Ich bin nie unter Alkoholeinfluss gefahren."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Gedanken, Gefühle nach dem Delikt?",
+    "answers": [
+      "Nach dem Delikt, eine peinliche Situation, ich schämte mich! Ich war gleichgültig und egoistisch. Ich habe die Schwere meines Fehlers erkannt und dass ich meine Freunde und mich im Verkehr verletzt habe, was ich mir nie für jemanden gewünscht hätte. Ich verstehe, dass ich ein Problem mit Alkohol habe und verstehe die Gefahr, die ich im Verkehr dargestellt habe!",
+      "Ich fühle mich schlecht wegen des Vorfalls, aber ich habe die Schwere der Konsequenzen nicht verstanden."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wie sind Sie nach dem Delikt mit Alkohol umgegangen? Wer oder was hat Sie motiviert, Ihr Verhalten zu ändern? Was war der Wendepunkt?",
+    "answers": [
+      "Nachdem ich meinen Führerschein verloren hatte, habe ich komplett mit dem Alkohol aufgehört. Der Wendepunkt war der Unfall, das Delikt, ich bin aufgewacht, es war ein Schock für mich. Ich habe verstanden und mich entschieden, mein Verhalten für meine Zukunft, meine Familie, aber auch für die Gesellschaft zu ändern. Ich habe erkannt, dass eine Veränderung notwendig ist und ich möchte diese Veränderung dauerhaft beibehalten.",
+      "Es war schwer für mich, mit dem Alkohol aufzuhören, aber ich habe erkannt, dass es wichtiger für mich ist, verantwortungsbewusst zu fahren. Ich habe mir selbst versprochen, mein Verhalten zu ändern."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Aus welchen anderen Gründen haben Sie noch mit dem Alkohol aufgehört?",
+    "answers": [
+      "Ich habe erkannt, dass ich keine Kontrolle über den Konsum habe und dass er mir Probleme im Leben bereitet.\n\nStreitereien und peinliche Situationen!\n\nVernachlässigung von Hobbys!\n\nIch habe erkannt, dass Alkohol meine Gesundheit und mein allgemeines Wohlbefinden negativ beeinflusst.",
+      "Ich wollte mein Verhalten aufgrund des sozialen Drucks ändern."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "War es einfach, mit dem Alkohol aufzuhören?",
+    "answers": [
+      "Nein!, es war nicht einfach, es war ungewöhnlich, nicht mehr wie früher Alkohol zu trinken, es war kein physisches Problem, aber die Gedanken an Alkohol waren am Anfang präsent, an Geburtstagen, Partys.",
+      "Ja, es war ziemlich einfach, mit dem Alkohol aufzuhören, weil ich es wirklich wollte."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Warum haben Sie nicht früher mit dem Alkohol aufgehört?",
+    "answers": [
+      "In der Vergangenheit habe ich mir nie die Frage gestellt, mit dem Trinken aufzuhören, weil ich nicht auf meine Gesundheit geachtet habe. Ich dachte, Alkohol hilft mir, mit Stress umzugehen und erleichtert mir soziale Beziehungen. Alkoholkonsum wurde als das Normalste der Welt auf Partys angesehen und ich habe nicht an die negativen Auswirkungen auf meinen Körper gedacht.",
+      "Ich war mir der Probleme des übermäßigen Konsums bewusst, aber ich hatte nicht den Willen, mich zu ändern."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wie viel und wie oft haben Sie getrunken? Vergangenheit:",
+    "answers": [
+      "Zwischen 20 und 30 Jahren habe ich 3-4 Bier à 0,5 Liter und 2 doppelte Schnäpse drei- oder viermal im Monat getrunken, vor allem am Wochenende, normalerweise bei besonderen Anlässen oder im Restaurant. \n\nVon 30 bis 34 Jahren, als ich nach Deutschland kam, also in den letzten vier Jahren, habe ich mein Trinkverhalten negativ verändert, ich habe regelmäßig getrunken, leider ist die Menge an Alkohol gestiegen! Unterschiedlich nach der Arbeit, normalerweise Mittwoch, Donnerstag 2-3 Bier. Am Wochenende 4-5, 5-6, 7-8 Bier. \n\nMaximale Mengen: alle 2 Monate 9-10 Bier + 2 doppelte Schnäpse, also etwa 6 Mal im Jahr.",
+      "Ich habe selten und in kleinen Mengen Alkohol getrunken. Ich habe nie exzessiv getrunken."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Warum haben Sie getrunken? Ursachen?",
+    "answers": [
+      "Die Ursache sehe ich in meiner Vergangenheit und liegt in meinen Gedanken und Gefühlen.\n\nIn Rumänien haben sich meine Eltern um uns gekümmert, sie hatten Zeit für mich. In der Schule war es gut, es hat mir gefallen.\n\nAls ich 2018 mit 30 Jahren nach Deutschland kam, war es einerseits ein neues Leben, es war schwer, aber auch die Trennung von meiner Ex-Freundin, die Trennung von meinen alten Freunden und der Familie, von meiner stabilen Gruppe der Zugehörigkeit und Anerkennung, ich fühlte mich allein und verloren. Ich habe angefangen, regelmäßig Alkohol zu trinken, am Anfang auch allein, ja!\n\nAlkoholkonsum hat mir geholfen, Stress abzubauen und Probleme zu vergessen. Ich habe rumänische Freunde bei der Arbeit gefunden und wir haben zusammen getrunken, ich fühlte mich akzeptiert. \n\nIch wollte es allen recht machen, ich habe allen geholfen und konnte nicht „nein“ sagen, ich hatte Angst, abgelehnt zu werden. Ich habe mich nicht schwach gezeigt und mit niemandem über Probleme gesprochen. Am Ende habe ich die Kontrolle über den Alkoholkonsum verloren.",
+      "Ich habe keine spezifische Erklärung. Ich habe einfach angefangen, ab und zu zu trinken, und so ging es weiter."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wie sind Sie in der Vergangenheit mit Stress umgegangen?",
+    "answers": [
+      "In der Vergangenheit in Rumänien habe ich mit der Familie und der Partnerin gesprochen.",
+      "Ich war eine gestresste Person, aber ich habe es vermieden, mit jemandem darüber zu sprechen."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Was war die Funktion des Alkoholkonsums in der Zeit, als Sie exzessiv getrunken haben?",
+    "answers": [
+      "Ich habe Alkohol getrunken, um Stress abzubauen, um Probleme zu vergessen (Trennung, mein Wunsch, akzeptiert und dazuzugehören, aber auch das neue Leben, es war am Anfang sehr schwer).",
+      "Alkohol hat mir geholfen, mich zu entspannen, es gab keine spezielle Funktion."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wie gehen Sie heute mit Stress in Ihrem Leben um? Wie haben Sie Stress reduziert?",
+    "answers": [
+      "Jetzt spreche ich offen und ehrlich über meine Probleme. Ich drücke meine Grenzen aus und sage „Nein“.",
+      "Ich mache Sport und Aktivitäten, die mich entspannen."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Was spricht dagegen, dass Sie nicht alkoholabhängig waren?",
+    "answers": [
+      "Ich hatte keine Entzugsprobleme, also keine physischen Probleme!\n\nIch habe ohne Hilfe aufgehört.\n\nIch habe keine großen Mengen während der Woche getrunken. Ich habe morgens nichts getrunken.\n\nIch habe meine Termine eingehalten.\n\nIch war nicht im Krankenhaus, ich habe keine Therapie gemacht.",
+      "Abhängigkeit ist eine schwere Krankheit, ich habe nie geglaubt, dass ich in einer solchen Situation bin."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Veränderungen! Was hat sich in Ihrem Leben verändert, seit Sie nicht mehr trinken?",
+    "answers": [
+      "Alles ist positiver geworden, seit ich nicht mehr trinke:\n\nIch fühle mich besser, gesünder. Es ist besser in der Beziehung. (Ich habe seit zwei Jahren eine Freundin!)\n\nBei der Arbeit habe ich mehr Energie und Schwung, ich habe neue Kollegen.\n\nIch habe meine alten Hobbys wiederbelebt. Ich mache wieder mehr Sport, Fahrrad fahren, Spaziergänge mit meiner Freundin.\n\nDie Zeit, die ich am Wochenende mit Alkoholkonsum verbracht habe, habe ich jetzt durch Hobbys und Familie ersetzt.",
+      "Ich habe mit dem Alkohol aufgehört, aber ansonsten ist mein Leben gleich geblieben."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Was wären Risikosituationen, in denen Ihr neues Alkoholkonsumverhalten gefährdet sein könnte?",
+    "answers": [
+      "Risikosituationen\n\nbestimmte Lebenskrisen können gefährlich sein, wie der Tod eines geliebten Menschen, schwere Krankheiten, der Verlust des Arbeitsplatzes, Angst, Stimmungsschwankungen, der Verlust eines Partners oder schwere Erkrankungen. In jedem Fall würde ich keinen Alkohol trinken. Ich würde Unterstützung in der Familie finden. Ich lebe weiter, schaue nach vorne.\n\nRisikosituation (Jemand bietet mir in Zukunft auf einer Geburtstagsfeier Alkohol an!)\n\nWenn mir jemand in Zukunft Alkohol anbietet, sei es auf einer Geburtstagsfeier oder einer Party, werde ich sagen, dass ich keinen Alkohol mehr trinke, weil ich ein Problem mit Alkohol habe und dass ich jeden Konsum als reine Zeitverschwendung sehe! Ich mag es, Gläser anzustoßen, aber nur mit Wasser! Ich werde empfehlen, dasselbe zu tun. Ich bestelle alkoholfreie Getränke. Ich vermeide Veranstaltungen, bei denen die Erfahrung gezeigt hat, dass viel getrunken wird.\n\nRisikosituation (Ich treffe zufällig meine alten Freunde und einer von ihnen bringt mir ein Bier!)\n\nIch sage, nein danke, ich trinke keinen Alkohol, ich bevorzuge Cola! Beim nächsten Angebot! Nein, danke, ich bevorzuge Cola! Wenn er nicht aufhört, drohe ich, demonstrativ aufzustehen und zu gehen.",
+      "Ich sehe kein Rückfallrisiko."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wo sehen Sie das Rückfallrisiko „das gleiche Delikt erneut zu begehen“? Warum ist das Rückfallrisiko minimal?",
+    "answers": [
+      "In Zukunft möchte ich das Gesetz respektieren, weil ich niemandes Leben mehr gefährden möchte. Natürlich kann niemand 100% garantieren.\n\nDas Risiko ist minimal, weil:\n\nHeute spreche ich mit anderen (meiner Freundin, die mich unterstützt) so früh wie möglich über meine Probleme.\n\nIch zeige mich nicht mehr ständig stark, ich kann zeigen, dass ich auch schwach bin.\n\nIch habe gelernt, „Nein“ zu sagen, ich mache es nicht mehr allen recht!\n\nIch kenne die Risikosituationen, ich weiß über meinen Wunsch, akzeptiert und dazuzugehören, ich kenne die Ursachen meines Konsums!",
+      "Das Rückfallrisiko besteht immer, aber ich bin zuversichtlich, dass ich es vermeiden kann."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Notfallplan (eine Liste) nach einem Rückfall (wenn ich wieder trinke!)?",
+    "answers": [
+      "Die Telefonnummer des MPU-Beraters, der immer verfügbar ist!\n\nEine Liste: Zeigt, was passiert, wenn ich weiter trinke: Schulden, Trennung, Arbeitsplatzverlust, Krankheit usw.! Das Risiko, alles zu verlieren, was ich bisher erreicht habe! Gesundheit, Freunde, Sport, Geld, Hobbys!",
+      "Ich habe keinen Notfallplan, weil ich überzeugt bin, dass ich den Fehler der Vergangenheit nie wieder machen werde."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Was haben Sie während der MPU-Vorbereitung gelernt?",
+    "answers": [
+      "Ich habe über das Delikt gesprochen\n\nIch habe es analysiert und meine Fehler gefunden.\n\nFehler: Ich dachte, ich würde nicht erwischt werden! Ich war egoistisch! Ich habe das Gesetz nicht respektiert: Ich bin unter Alkoholeinfluss gefahren! Ich war eine Gefahr für mich und andere!\n\nIch kenne die Ursachen meines Konsums, meinen Wunsch nach Anerkennung und Zugehörigkeit!\n\nIch weiß, dass Alkohol Gift für Nerven und Zellen ist, er schadet der Gesundheit.\n\nEr kann zu Abhängigkeit führen. Mit jeder Vergiftung sterben Gehirnzellen.\n\nRegelmäßiger Alkoholkonsum führt zu schlechter Erinnerung und verminderter Intelligenz.\n\nIch weiß, was Gedächtnisabhängigkeit ist (das Gehirn wird sich immer an die Höchstwerte erinnern).\n\nIch weiß, was Toleranzsteigerung ist (Alkohol wird immer mehr).\n\nIch weiß, was exzessiver Alkoholkonsum ist, wenn fünf oder mehr Gläser Alkohol auf einmal getrunken werden.\n\nDas Risiko, ein identisches Delikt zu begehen, kann nicht ausgeschlossen werden.\n\nIch habe über die Vor- und Nachteile gesprochen. Ich bin auf die Zukunft vorbereitet.",
+      "Die MPU-Vorbereitung hat mir eine klarere Perspektive auf die Folgen des Fahrens unter Alkoholeinfluss gegeben und ich habe gelernt, dass Alkohol viel mehr als nur die Fahrfähigkeiten beeinflussen kann."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Glauben Sie, dass Ihr Führerschein entzogen werden sollte, wollen Sie unbedingt den Führerschein zurück?",
+    "answers": [
+      "Nicht unbedingt, aber ich denke, es wäre schön, wenn ich meinen Führerschein zurückbekommen würde. \n\nDas Wichtigste für mich ist jedoch, dass ich mein Verhalten geändert habe, ich möchte keine Gefahr mehr für jemanden sein, wenn ich am Straßenverkehr teilnehme. Weil ich mein neues Leben nicht mehr gefährden möchte.",
+      "Ich möchte, dass mein Führerschein so schnell wie möglich zurückgegeben wird, weil ich ihn brauche."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Haben Sie noch etwas hinzuzufügen, um abzuschließen?",
+    "answers": [
+      "Ich denke, dass der Entzug des Führerscheins nicht so schlimm ist, weil es eine Lehre für mich ist. \n\nWenn mir das nicht passiert wäre, hätte ich nichts in meinem Leben geändert. Ich bin dankbar dafür!",
+      "Ich bin überzeugt, dass ich in Zukunft ein verantwortungsbewusster Fahrer sein werde."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wann hatten Sie zum ersten Mal Kontakt mit Alkohol und wann haben Sie zum ersten Mal getrunken?",
+    "answers": [
+      "Mit 14 Jahren habe ich zum ersten Mal einen Schluck Bier probiert. Es hat mir damals überhaupt nicht geschmeckt!",
+      "Ich hatte früh Kontakt mit Alkohol, aber ich habe erst in einem höheren Alter regelmäßig getrunken."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Was waren die positiven Aspekte des Alkoholkonsums?",
+    "answers": [
+      "Zunächst einmal war es angenehm. Ich fühlte mich entspannt und fröhlich. Ein weiterer positiver Aspekt war, dass ich mich in der Gesellschaft von Freunden wohl und sozial fühlte, gesprächiger und offener. Alkohol hatte manchmal auch eine unterhaltsame Wirkung, es hob meine Stimmung.",
+      "Alkohol war Teil des sozialen Lebens und unterhaltsamer Veranstaltungen."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Was waren die negativen Aspekte des Alkoholkonsums?",
+    "answers": [
+      "Am nächsten Tag kämpfte ich mit Kopfschmerzen, Übelkeit, Müdigkeit und Kraftlosigkeit. Ich war erschöpft, unmotiviert, eine völlig andere Person!",
+      "Es gab bestimmte negative Auswirkungen, aber ich habe sie nicht als ernst angesehen."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Mit wenig und viel Alkohol?",
+    "answers": [
+      "Mit wenig Alkohol, also ein bis zwei Bier, fühlte ich mich entspannt und fröhlich, ich hatte am nächsten Tag keine Beschwerden. Aber mit viel Alkohol, etwa 5-6 Bier, änderten sich die Dinge. Ich hatte am nächsten Tag Kopfschmerzen, Übelkeit und extreme Müdigkeit. Ich konnte meine normale Tätigkeit nicht mehr ausüben.",
+      "Alkohol in kleinen Mengen hat mich nicht beeinflusst, aber größere Mengen hatten Auswirkungen."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wo und mit wem haben Sie hauptsächlich getrunken?",
+    "answers": [
+      "Ich habe hauptsächlich in Gesellschaft von Freunden und Arbeitskollegen getrunken. Normalerweise bin ich Mittwoch, Donnerstagabend nach der Arbeit in die Stadt gegangen, um ein Bier in einer Bar zu trinken. Außerdem habe ich auf Partys, Hochzeiten oder wichtigen Veranstaltungen mit Bekannten getrunken. So waren die Entspannungsmomente in der Gruppe mit alkoholischen Getränken verbunden. In der Vergangenheit habe ich, um mich in meinem Freundeskreis akzeptiert zu fühlen, genauso getrunken wie sie.",
+      "Ich habe bei verschiedenen Anlässen in verschiedenen Freundes- und Familienkreisen getrunken."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wurden Sie jemals nach Ihrem Alkoholkonsum gefragt?",
+    "answers": [
+      "Ja, von mehreren Seiten (Familie, Mutter). Ich würde zu viel trinken. Aber ich habe meinen Konsum als normal angesehen. Ich habe alles ignoriert.",
+      "Nein, niemand hatte jemals Zweifel an meinem Konsum."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Gab es Probleme mit der Freundin oder der Familie, bei der Arbeit aufgrund des Alkoholkonsums?",
+    "answers": [
+      "Natürlich haben wir uns oft wegen des Alkoholkonsums gestritten, bei der Arbeit, montags kraftlos, müde, ja, ich hatte Probleme, mich bei der Arbeit zu konzentrieren!",
+      "Ich hatte keine signifikanten Probleme mit der Familie oder bei der Arbeit aufgrund von Alkohol."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Haben Sie sich manchmal schuldig gefühlt wegen des Alkoholkonsums?",
+    "answers": [
+      "Ja, sicher! Vor allem, wenn man am nächsten Tag einen Kater hat. Aber zwei Tage später hatte ich es schon vergessen, ich wusste, dass ich etwas tun musste. Der Gedanke blieb jedoch, ich habe nichts getan.",
+      "Ich habe mich nie schuldig gefühlt wegen des Alkoholkonsums."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wie haben Sie Ihren Konsum bewertet, haben Sie jemals die Kontrolle über die Menge des Getrunkenen verloren?",
+    "answers": [
+      "In der Vergangenheit hatte ich Probleme mit Alkohol und habe ein paar Mal die Kontrolle über die Menge des Getrunkenen verloren, ich habe mich übermäßig betrunken. Es ist etwa 6 Mal im Jahr passiert. Normalerweise habe ich Bier getrunken, aber manchmal Schnaps, was mich schneller die Kontrolle verlieren ließ. Ich muss zugeben, dass ich nicht wusste, wann ich aufhören sollte.",
+      "Nein, ich habe immer die Menge des Alkohols, den ich getrunken habe, kontrolliert."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wenn es Filmrisse aufgrund des Alkoholkonsums gab, das heißt, wenn Sie nach übermäßigem Alkoholkonsum Teile des Abends, an dem Sie exzessiv getrunken haben, vergessen haben?",
+    "answers": [
+      "Ja, in der Zeit, in der ich sehr viel Alkohol getrunken habe, hatte ich ein paar Mal Filmrisse nach einem Abend, an dem ich exzessiv getrunken habe. Es gab bereits einige Teile des Abends, an die ich mich nicht mehr erinnern konnte. Dies war ein klares Zeichen dafür, dass ich die sichere Grenze überschritten hatte und der Alkohol mein Gedächtnis beeinflusste.",
+      "Ich hatte nie Filmrisse aufgrund von Alkohol."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Haben Sie sich in der Vergangenheit bewusst und absichtlich vom Alkoholkonsum enthalten oder öfter über einen längeren Zeitraum? Haben Sie Trinkpausen eingelegt?",
+    "answers": [
+      "Ehrlich gesagt, ich hatte keine Trinkpausen und es gab nie Versuche der Abstinenz. Nein, ich habe mich nicht bewusst und absichtlich über einen längeren Zeitraum vom Alkoholkonsum enthalten. Obwohl ich manchmal nach einem Abend des Trinkens erkannte, dass ich die Situation nicht gut kontrolliert hatte und dass ich die Menge hätte reduzieren sollen, habe ich keine konkreten Schritte unternommen, um aufzuhören. Mein Fehler war, dass ich die durch Alkohol verursachten Probleme zu schnell vergaß und nicht verstand, dass ich bereits missbrauchte.",
+      "Ich hatte ab und zu Pausen, wenn ich vom Alkohol erschöpft war. Ich habe erkannt, dass ich aufhören muss."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "In welche Kategorie von Trinkern sehen Sie sich heute rückblickend? Wie würden Sie Ihr Trinkverhalten bis zum Datum des Delikts bewerten?",
+    "answers": [
+      "Heute sehe ich mich im Missbrauch, die Mengen an Alkohol waren hoch und problematisch.\n\nSkala bei 8. (unterdurchschnittlich - durchschnittlich - missbräuchlich - abhängig)? \n\n                                         Skala 1 2 3 4 5 6 7 8 9 10",
+      "Ich würde nicht sagen, dass ich alkoholabhängig war, sondern eher ein Gelegenheitstrinker."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Trinken Sie heute Alkohol? Wenn ja, was, wie viel und wie oft? Trinken Sie alkoholfreies Bier? Können Sie sich vorstellen, in Zukunft ein oder zwei Bier zu trinken?",
+    "answers": [
+      "Ich bin seit über einem Jahr abstinent! Nein! Nein, ich trinke kein alkoholfreies Bier, ich achte bewusst darauf, was ich esse und ob Alkohol in Getränken, Lebensmitteln oder Medikamenten enthalten ist. Bei Medikamenten frage ich nach Alternativen ohne Alkohol. Nein! Ich habe Probleme mit Alkohol, ich weiß, dass es nicht bei einem Bier bleiben wird!",
+      "Ich bin seit über einem Jahr abstinent. Vielleicht werde ich in Zukunft wieder ein Bier trinken, aber in Maßen."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Welchen Kontakt haben Sie derzeit mit der Clique, mit der Sie getrunken haben?",
+    "answers": [
+      "Inzwischen habe ich keinen Kontakt mehr zu meiner Clique. Als ich meinen Wunsch äußerte, keinen Alkohol mehr zu trinken, waren einige meiner alten Freunde nicht in der Lage, mich zu verstehen oder zu akzeptieren. Die meisten unserer Treffen fanden an Orten statt, an denen alkoholische Getränke konsumiert wurden. Jetzt vermeide ich solche Veranstaltungen oder Lokale. In meinem aktuellen Freundeskreis wäre intensiver Alkoholkonsum nicht akzeptiert.",
+      "Ich halte Kontakt zu einem Teil der Clique, mit der ich getrunken habe, aber wir vermeiden es, zusammen zu trinken."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Waren Sie ein sicherer Fahrer?",
+    "answers": [
+      "Nein, sonst wäre ich nicht bei der MPU, denn sehr gute Fahrer müssen nicht zur MPU!",
+      "Ich bin die meiste Zeit verantwortungsbewusst gefahren, aber jetzt verstehe ich, dass ich eine große Veränderung machen kann."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wie bewerten Sie die Tatsache, dass Sie bis zum Unfall nie einen größeren Unfall hatten?",
+    "answers": [
+      "Es war nur Glück!",
+      "Ich hatte Glück, aber es ist wichtig, sich der Risiken im Verkehr bewusst zu sein."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Warum haben wir so viele Regeln und Gesetze?",
+    "answers": [
+      "Wir brauchen Regeln. Regeln schützen uns. Ich habe verstanden, dass ich sicher und in Frieden leben werde, wenn ich die Regeln respektiere. Ohne Regeln wäre es nur Chaos.",
+      "Die Verkehrsregeln sind notwendig für Sicherheit und Ordnung, aber sie müssen mit Verantwortung respektiert werden."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Wie sehen Sie sich als Fahrer in der Vergangenheit?",
+    "answers": [
+      "Ich war ein egoistischer und nachlässiger Fahrer, ich dachte nur an mich und nicht an die Konsequenzen! Es tut mir leid!",
+      "Ich war ein erfahrener Fahrer, aber manchmal habe ich vergessen, die Regeln zu respektieren."
+    ],
+    "correct": 0
+  },
+  {
+    "question": "Was glauben Sie, ist ein guter, normaler Fahrer?",
+    "answers": [
+      "Ein guter Autofahrer ist jemand, der die Regeln respektiert, aufmerksam ist, an andere denkt und keine Gefahr mehr im Verkehr darstellt!",
+      "Ein guter Fahrer ist verantwortungsbewusst und vorsichtig im Verkehr."
+    ],
+    "correct": 0
+  },
+
+  // ** Neue Fragen hier einfügen!**
+  //
+  // {
+  //   "question": "Question here...",
+  //   "answers": [
+  //     "Answer 1",
+  //     "Answer 2"
+  //   ],
+  //   "correct": 0
+  // }
+]; 
+
+let currentQuestion = 0;
+let score = 0;
+
+const startQuiz = document.getElementById('startQuiz');
+const questionText = document.getElementById('questionText');
+const answerButtons = document.getElementById('answerButtons');
+const prevButton = document.getElementById('prevButton');
+const nextButton = document.getElementById('nextButton');
+const results = document.getElementById('results');
+
+startQuiz.addEventListener('click', () => {
+  startQuiz.style.display = "none";
+  document.getElementById('quiz').style.display = "block";
+  loadQuestion();
+});
+
+function loadQuestion() {
+  const questionData = questions[currentQuestion];
+  questionText.innerHTML = questionData.question;
+  answerButtons.innerHTML = '';
+
+  questionData.answers.forEach((answer, index) => {
+    const button = document.createElement('button');
+    button.classList.add('answer-btn');
+    button.innerHTML = answer;
+    button.addEventListener('click', () => checkAnswer(index));
+    answerButtons.appendChild(button);
+  });
+
+  prevButton.style.display = currentQuestion > 0 ? "inline-block" : "none";
+  nextButton.style.display = "none";
+}
+
+function checkAnswer(selectedIndex) {
+  const correctAnswer = questions[currentQuestion].correct;
+  if (selectedIndex === correctAnswer) {
+    score++;
+    alert("Richtig!");
+  } else {
+    alert("Falsch!");
+  }
+
+  nextButton.style.display = "inline-block";
+}
+
+nextButton.addEventListener('click', () => {
+  currentQuestion++;
+  if (currentQuestion < questions.length) {
+    loadQuestion();
+  } else {
+    endQuiz();
+  }
+});
+
+prevButton.addEventListener('click', () => {
+  if (currentQuestion > 0) {
+    currentQuestion--;
+    loadQuestion();
+  }
+});
+
+function endQuiz() {
+  document.getElementById('quiz').style.display = "none";
+  results.innerHTML = `<h2>Your Score is ${score} / ${questions.length}</h2>`;
+  results.innerHTML += `<p> ${score >= questions.length / 2 ? "Great job! You Passed!" : "You failed. Try again." }</p>`;
+  results.style.display = "block";
+}
+</script>
+</body>
+</html>
